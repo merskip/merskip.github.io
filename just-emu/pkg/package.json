@@ -1,0 +1,15 @@
+{
+  "name": "just-emu",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "just_emu_bg.wasm",
+    "just_emu.js",
+    "just_emu.d.ts"
+  ],
+  "main": "just_emu.js",
+  "types": "just_emu.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
