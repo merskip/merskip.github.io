@@ -2,79 +2,162 @@
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
-    <title>Gothic 1 remake - Lockpicking solver</title>
+    <title>Gothic 1 Remake - Lockpicking solver</title>
     <script src="bfs.js"></script>
+    <style>
+        kbd {
+            background-color: #eeeeee;
+            border-radius: 3px;
+            border: 1px solid #b4b4b4;
+            box-shadow: 0 1px 1px rgb(0 0 0 / 0.2), 0 2px 0 0 rgb(255 255 255 / 0.7) inset;
+            color: #333333;
+            display: inline-block;
+            font-size: 0.85em;
+            font-weight: bold;
+            line-height: 1;
+            padding: 2px 4px;
+            white-space: nowrap;
+        }
+
+        ol.solution {
+            counter-reset: item;
+        }
+
+        ol.solution li {
+            display: block;
+        }
+
+        ol.solution li:before {
+            content: "step " counter(item) ". ";
+            counter-increment: item;
+            display: inline-block;
+            color: #555;
+            min-width: 4rem;
+        }
+    </style>
 </head>
-<body>
-<h1>Gothic 1 remake - Lockpicking solver</h1>
+<body style="width: 1000px; margin: 0 auto">
 <div>
-    <label>
-        Initial state
-        <input type="text" id="initialState">
-    </label>
-    <br>
-    Effects:<br>
-    <label>
-        Insert 1: <input type="text" id="insertEffects[0]">
-    </label>
-    <br>
-    <label>
-        Insert 2: <input type="text" id="insertEffects[1]">
-    </label>
-    <br>
-    <label>
-        Insert 3: <input type="text" id="insertEffects[2]">
-    </label>
-    <br>
-    <label>
-        Insert 4: <input type="text" id="insertEffects[3]">
-    </label>
-    <br>
-    <label>
-        Insert 5: <input type="text" id="insertEffects[4]">
-    </label>
-    <br>
-    <label>
-        Insert 5: <input type="text" id="insertEffects[5]">
-    </label>
-    <br>
-    <button id="solve">Solve</button>
-    <br>
-    <div id="solution"></div>
+    <h1>Gothic 1 Remake - Lockpicking solver</h1>
+    <img src="Preview.png" alt="Preview of lock picking" style="width: 500px;"/>
+    <p>
+        To open the lock in <i>Gothic 1 Rename</i>, you need to solve a puzzle. It involves arranging all sliders so that every
+        pin aligns on a single line at position 4 (the&snexact center). The difficulty comes from the feedback coupling
+        between the sliders - when you move one slider, others may change their positions at the same time.
+    </p>
 </div>
+<div style="display: flex; flex-direction: row">
+    <div style="flex: 1">
+        <div style="margin: 10px; padding: 10px; border: 1px solid #ccc">
+            <label>
+                Initial pins state
+                <input type="text" id="initialPinsState">
+            </label>
+            <br>
+            Slider effects:<br>
+            <label>
+                Slider 1: <input type="text" id="sliderEffects[0]">
+            </label>
+            <br>
+            <label>
+                Slider 2: <input type="text" id="sliderEffects[1]">
+            </label>
+            <br>
+            <label>
+                Slider 3: <input type="text" id="sliderEffects[2]">
+            </label>
+            <br>
+            <label>
+                Slider 4: <input type="text" id="sliderEffects[3]">
+            </label>
+            <br>
+            <label>
+                Slider 5: <input type="text" id="sliderEffects[4]">
+            </label>
+            <br>
+            <label>
+                Slider 5: <input type="text" id="sliderEffects[5]">
+            </label>
+            <br>
+            <button id="solve">Solve</button>
+        </div>
+        <div id="solution"></div>
+    </div>
+    <div style="flex: 1">
+        <h2>Step-by-step</h2>
+        <ol>
+            <li>
+                Start with slider 1 (yellow color) and enter its position (white color) into the "Initial state" field.
+                Then, after a comma, enter the remaining sliders in order.<br>
+                In this example: <code>5, 6, 1, 3, 2, 1</code>
+            </li>
+            <li>
+                Now you need to analyze how sliders influence each other.
+                Simply move a selected slider in any direction and observe how the other sliders respond.
+                Each row in the "Slider effects" section corresponds to a specific slider.<br>
+                <br>
+                Enter the numbers of the sliders that move together with the selected one:<br>
+                If a slider moves in the same direction, write it as a positive number.<br>
+                If it moves in the opposite direction, write it as a negative number.<br>
+                <br>
+                For example, in this case:<br>
+                when you move slider 1, then slider 4 moves in the opposite direction,<br>
+                so in the field "Slider 1" enter "-4".
+            </li>
+            <li>
+                After entering the initial state and all dependencies, click "Solve".<br>
+                <br>
+                If you did not make any mistakes and a solution exists, the solution will be displayed below.
+                Follow the provided instructions step by step.
+                The arrows indicate the direction in which each slider should be moved.<br>
+            </li>
+        </ol>
+        Full example for the chest near the arena in the Old Camp:
+        <code><br>
+            Initial pins state: 5 6 1 3 2 1<br>
+            Slider 1: -4<br>
+            Slider 2: -1 4 -6<br>
+            Slider 3: -6<br>
+            Slider 4: 2 6<br>
+            Slider 5: 2 -6<br>
+            Slider 5: 4
+        </code>
+    </div>
+</div>
+
 
 <script>
     /** @type {HTMLInputElement} */
-    const initialStateInput = document.getElementById("initialState");
+    const initialPinsStateInput = document.getElementById("initialPinsState");
     /** @type {HTMLInputElement[]} */
-    const insertEffectsInputs = [
-        document.getElementById("insertEffects[0]"),
-        document.getElementById("insertEffects[1]"),
-        document.getElementById("insertEffects[2]"),
-        document.getElementById("insertEffects[3]"),
-        document.getElementById("insertEffects[4]"),
-        document.getElementById("insertEffects[5]"),
-    ]
+    const sliderEffectsInputs = [
+        document.getElementById("sliderEffects[0]"),
+        document.getElementById("sliderEffects[1]"),
+        document.getElementById("sliderEffects[2]"),
+        document.getElementById("sliderEffects[3]"),
+        document.getElementById("sliderEffects[4]"),
+        document.getElementById("sliderEffects[5]")
+    ];
     /** @type {HTMLButtonElement} */
     const solveButton = document.getElementById("solve");
     /** @type {HTMLElement} */
     const solutionElement = document.getElementById("solution");
 
     solveButton.addEventListener("click", () => {
-        let initialState = parseArrayInput(initialStateInput);
-        let effects = insertEffectsInputs.map(parseArrayInput).map(inputEffectsToEffects);
-        console.log("initialState: ", initialState, ", effects: ", effects);
+        let initialPinsState = parseArrayInput(initialPinsStateInput);
+        let effects = sliderEffectsInputs.map(parseArrayInput).map(inputEffectsToEffects);
+        console.log("initialPinsState: ", initialPinsState, ", effects: ", effects);
 
-        const solution = bfs(initialState, effects);
+        const solution = bfs(initialPinsState, effects);
         console.log("solution: ", solution);
 
         let outputHtml = "";
         if (!solution) {
             outputHtml = "Solution not found";
         } else {
-            outputHtml = "<ol>";
+            outputHtml = "<ol class='solution'>";
             solution.forEach((step) => {
-                outputHtml += `<li>${step.insertIndex} ${step.direction === 1 ? "←" : "→"}</li>`;
+                outputHtml += `<li>move slider <strong>${step.sliderIndex + 1}</strong> ${step.direction === 1 ? "right <kbd>A</kbd><kbd>←</kbd>" : "left <kbd>D</kbd><kbd>→</kbd>"}</li>`;
             });
             outputHtml += "</ol>";
         }

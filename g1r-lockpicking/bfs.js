@@ -4,7 +4,7 @@ const TARGET = [4, 4, 4, 4, 4, 4];
 
 /**
  * @typedef {Object} Step
- * @property {number} insertIndex
+ * @property {number} sliderIndex
  * @property {number} direction
  *
  * @param {number[]} start
@@ -31,11 +31,11 @@ function bfs(start, effects) {
             return reconstruct(start, parent, action);
         }
 
-        for (let lockId = 0; lockId < current.length; lockId++) {
+        for (let sliderIndex = 0; sliderIndex < current.length; sliderIndex++) {
             for (const direction of [-1, 1]) {
                 const next = applyMove(
                     current,
-                    lockId,
+                    sliderIndex,
                     direction,
                     effects
                 );
@@ -49,7 +49,7 @@ function bfs(start, effects) {
                 visited.add(nextKey);
                 parent.set(nextKey, currentKey);
                 action.set(nextKey, {
-                    insertIndex: lockId + 1,
+                    sliderIndex: sliderIndex,
                     direction: direction
                 });
                 queue.push(next);
@@ -75,10 +75,10 @@ function reconstruct(start, parent, action) {
     return path;
 }
 
-function applyMove(state, lockId, direction, effects) {
+function applyMove(state, sliderIndex, direction, effects) {
     const next = [...state];
 
-    for (const [idx, sign] of effects[lockId]) {
+    for (const [idx, sign] of effects[sliderIndex]) {
         next[idx] += direction * sign;
 
         if (next[idx] < MIN_POS || next[idx] > MAX_POS) {
