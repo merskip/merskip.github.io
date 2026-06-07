@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Gothic 1 remake - Lockpicking solver</title>
+    <script src="bfs.js"></script>
+</head>
+<body>
+<h1>Gothic 1 remake - Lockpicking solver</h1>
+<div>
+    <label>
+        Initial state
+        <input type="text" id="initialState">
+    </label>
+    <br>
+    Effects:<br>
+    <label>
+        Insert 1: <input type="text" id="insertEffects[0]">
+    </label>
+    <br>
+    <label>
+        Insert 2: <input type="text" id="insertEffects[1]">
+    </label>
+    <br>
+    <label>
+        Insert 3: <input type="text" id="insertEffects[2]">
+    </label>
+    <br>
+    <label>
+        Insert 4: <input type="text" id="insertEffects[3]">
+    </label>
+    <br>
+    <label>
+        Insert 5: <input type="text" id="insertEffects[4]">
+    </label>
+    <br>
+    <label>
+        Insert 5: <input type="text" id="insertEffects[5]">
+    </label>
+    <br>
+    <button id="solve">Solve</button>
+    <br>
+    <div id="solution"></div>
+</div>
+
+<script>
+    /** @type {HTMLInputElement} */
+    const initialStateInput = document.getElementById("initialState");
+    /** @type {HTMLInputElement[]} */
+    const insertEffectsInputs = [
+        document.getElementById("insertEffects[0]"),
+        document.getElementById("insertEffects[1]"),
+        document.getElementById("insertEffects[2]"),
+        document.getElementById("insertEffects[3]"),
+        document.getElementById("insertEffects[4]"),
+        document.getElementById("insertEffects[5]"),
+    ]
+    /** @type {HTMLButtonElement} */
+    const solveButton = document.getElementById("solve");
+    /** @type {HTMLElement} */
+    const solutionElement = document.getElementById("solution");
+
+    solveButton.addEventListener("click", () => {
+        let initialState = parseArrayInput(initialStateInput);
+        let effects = insertEffectsInputs.map(parseArrayInput).map(inputEffectsToEffects);
+        console.log("initialState: ", initialState, ", effects: ", effects);
+
+        const solution = bfs(initialState, effects);
+        console.log("solution: ", solution);
+
+        let outputHtml = "";
+        if (!solution) {
+            outputHtml = "Solution not found";
+        } else {
+            outputHtml = "<ol>";
+            solution.forEach((step) => {
+                outputHtml += `<li>${step.insertIndex} ${step.direction === 1 ? "←" : "→"}</li>`;
+            });
+            outputHtml += "</ol>";
+        }
+        solutionElement.innerHTML = outputHtml;
+    });
+
+    /**
+     * @param {HTMLInputElement} input
+     * @return {number[]}
+     */
+    function parseArrayInput(input) {
+        return (input.value.match(/-?\d+/g) || []).map(Number);
+    }
+
+    /**
+     * @param {number[]} effectsList
+     * @param {number} index
+     * @return {number[][]}
+     */
+    function inputEffectsToEffects(effectsList, index) {
+        return [
+            [index, 1],
+            ...effectsList.map(effect => ([
+                Math.abs(effect) - 1,
+                Math.sign(effect) || 1
+            ]))
+        ];
+    }
+</script>
+</body>
+</html>
